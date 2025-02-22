@@ -1,0 +1,33 @@
+name: 🚀 Docker Image CI (No Dockerfile in Repo)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: ⬇️ Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: 🐳 Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: 🏗️ Create Dockerfile and Build Image
+      run: |
+        echo "FROM python:3.10-slim" > Dockerfile
+        echo "WORKDIR /app" >> Dockerfile
+        echo "COPY . ." >> Dockerfile
+        echo 'CMD ["python", "password_manager.py"]' >> Dockerfile
+
+        docker build . --tag ${{ secrets.DOCKERHUB_USERNAME }}/password-generator:latest
+
+    - name: 🚀 Push Docker Image to Docker Hub
+      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/password-generator:latest
